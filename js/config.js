@@ -1,12 +1,12 @@
 window.VAPE_SHOP_CONFIG = {
-  SUPABASE_URL: "https://YOUR_PROJECT_ID.supabase.co",
-  SUPABASE_ANON_KEY: "YOUR_SUPABASE_ANON_KEY",
+  SUPABASE_URL: "https://ldvgygmibfhywchmhgpr.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_Hhr4bIb-EZUyw2_Mo1E8zw_WzJrSteo",
   STORAGE_BUCKET: "product-images",
   STORE: {
     name: "Blue Volt Vape Shop",
     tagline: "Premium vape products available in-store",
-    phone: "+63 900 000 0000",
-    email: "hello@bluevoltvape.com",
+    phone: "+63 969 243 4251",
+    email: "davepalomado2005@gmail.com",
     facebookUrl: "https://facebook.com/your-vape-shop",
     messengerUrl: "https://m.me/your-vape-shop",
     address: "Your physical store address",
