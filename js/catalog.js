@@ -43,7 +43,7 @@ function renderCompare() {
   document.getElementById("compareTable").innerHTML = items.length ? `
     <table>
       <thead><tr><th>Product</th><th>Brand</th><th>Price</th><th>Status</th></tr></thead>
-      <tbody>${items.map((item) => `<tr><td><a href="/products/${item.slug}">${escapeHtml(item.name)}</a></td><td>${escapeHtml(item.brand)}</td><td>${peso(item.price)}</td><td>${escapeHtml(item.status)}</td></tr>`).join("")}</tbody>
+      <tbody>${items.map((item) => `<tr><td><a href="${productUrl(item)}">${escapeHtml(item.name)}</a></td><td>${escapeHtml(item.brand)}</td><td>${peso(item.price)}</td><td>${escapeHtml(item.status)}</td></tr>`).join("")}</tbody>
     </table>
   ` : `<div class="admin-card">No products selected for comparison.</div>`;
 }

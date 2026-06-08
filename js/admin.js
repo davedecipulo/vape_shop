@@ -1,5 +1,7 @@
 const isLoginPage = location.pathname.includes("/admin/login");
 const isDashboardPage = location.pathname.includes("/admin/dashboard");
+const adminLoginUrl = location.protocol === "file:" ? "login.html" : "/admin/login.html";
+const adminDashboardUrl = location.protocol === "file:" ? "dashboard.html" : "/admin/dashboard.html";
 let adminProducts = [];
 let adminCategories = [];
 
@@ -11,26 +13,40 @@ document.addEventListener("DOMContentLoaded", async () => {
 function setupLogin() {
   document.getElementById("loginForm").addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (!supabase) {
+      toast(setupMessage);
+      return;
+    }
     const form = new FormData(event.currentTarget);
     const { error } = await supabase.auth.signInWithPassword({
       email: form.get("email"),
       password: form.get("password")
     });
     if (error) return toast(error.message);
-    location.href = "/admin/dashboard.html";
+    location.href = adminDashboardUrl;
   });
 }
 
 async function setupDashboard() {
+  if (!supabase) {
+    document.querySelector(".admin-main").innerHTML = `
+      <div class="admin-card">
+        <h1>Supabase setup required</h1>
+        <p class="muted">${escapeHtml(setupMessage)}</p>
+        <p>After setup, open <strong>/admin/login.html</strong> and sign in with the owner account.</p>
+      </div>
+    `;
+    return;
+  }
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    location.href = "/admin/login.html";
+    location.href = adminLoginUrl;
     return;
   }
   const { data: admin } = await supabase.from("admin_users").select("*").eq("id", user.id).maybeSingle();
   if (!admin) {
     await supabase.auth.signOut();
-    location.href = "/admin/login.html";
+    location.href = adminLoginUrl;
     return;
   }
   bindAdminEvents();
@@ -43,7 +59,7 @@ function bindAdminEvents() {
   });
   document.getElementById("logoutBtn").addEventListener("click", async () => {
     await supabase.auth.signOut();
-    location.href = "/admin/login.html";
+    location.href = adminLoginUrl;
   });
   document.getElementById("newProductBtn").addEventListener("click", () => openProductForm());
   document.getElementById("cancelProduct").addEventListener("click", closeProductForm);

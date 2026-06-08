@@ -1,5 +1,20 @@
-const cfg = window.VAPE_SHOP_CONFIG;
-const supabase = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+const cfg = window.VAPE_SHOP_CONFIG || {};
+const isSupabaseConfigured = Boolean(
+  cfg.SUPABASE_URL &&
+  cfg.SUPABASE_ANON_KEY &&
+  !cfg.SUPABASE_URL.includes("YOUR_PROJECT_ID") &&
+  !cfg.SUPABASE_ANON_KEY.includes("YOUR_SUPABASE_ANON_KEY") &&
+  window.supabase
+);
+let supabase = null;
+if (isSupabaseConfigured) {
+  try {
+    supabase = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+  } catch (error) {
+    supabase = null;
+  }
+}
+const setupMessage = "Supabase is not configured yet. Edit js/config.js with your Supabase URL and anon key.";
 
 const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800' viewBox='0 0 800 800'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop stop-color='%231f7cff'/%3E%3Cstop offset='1' stop-color='%2300c2ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='800' fill='%23070b14'/%3E%3Crect x='170' y='110' width='460' height='580' rx='34' fill='url(%23g)' opacity='.24'/%3E%3Cpath d='M290 190h220v420H290z' fill='%23f5f8ff' opacity='.12'/%3E%3Ctext x='400' y='430' fill='%23dbeafe' font-family='Arial' font-size='42' font-weight='700' text-anchor='middle'%3EProduct%3C/text%3E%3C/svg%3E";
 
@@ -34,7 +49,8 @@ function productImage(product) {
 }
 
 function productUrl(product) {
-  return `/products/${encodeURIComponent(product.slug)}`;
+  const slug = encodeURIComponent(product.slug);
+  return location.protocol === "file:" ? `product.html?slug=${slug}` : `/products/${slug}`;
 }
 
 function toast(message) {
@@ -79,13 +95,13 @@ function productCard(product) {
   const category = product.categories?.name || "Uncategorized";
   return `
     <article class="product-card">
-      <button class="icon-btn favorite" title="Save favorite" data-favorite="${product.id}">${favorites.includes(product.id) ? "★" : "☆"}</button>
+      <button class="icon-btn favorite" title="Save favorite" data-favorite="${product.id}">${favorites.includes(product.id) ? "*" : "+"}</button>
       <a href="${productUrl(product)}">
         <img class="product-img" loading="lazy" src="${escapeHtml(productImage(product))}" alt="${escapeHtml(product.name)}">
         <div class="product-body">
           ${statusBadge(product.status)}
           <h3>${escapeHtml(product.name)}</h3>
-          <div class="meta">${escapeHtml(product.brand)} · ${escapeHtml(product.flavor || "Assorted")}<br>${escapeHtml(category)}</div>
+          <div class="meta">${escapeHtml(product.brand)} / ${escapeHtml(product.flavor || "Assorted")}<br>${escapeHtml(category)}</div>
           <div class="price">${peso(product.price)}</div>
         </div>
       </a>
@@ -101,7 +117,7 @@ function wireProductActions(products) {
     button.addEventListener("click", (event) => {
       event.preventDefault();
       const active = toggleFavorite(button.dataset.favorite);
-      button.textContent = active ? "★" : "☆";
+      button.textContent = active ? "*" : "+";
     });
   });
   document.querySelectorAll("[data-compare]").forEach((button) => {
@@ -114,19 +130,20 @@ function wireProductActions(products) {
 }
 
 function applyStoreChrome() {
-  document.querySelectorAll("[data-store-name]").forEach((el) => (el.textContent = cfg.STORE.name));
-  document.querySelectorAll("[data-store-tagline]").forEach((el) => (el.textContent = cfg.STORE.tagline));
-  document.querySelectorAll("[data-store-phone]").forEach((el) => (el.textContent = cfg.STORE.phone));
-  document.querySelectorAll("[data-store-email]").forEach((el) => (el.textContent = cfg.STORE.email));
-  document.querySelectorAll("[data-store-address]").forEach((el) => (el.textContent = cfg.STORE.address));
-  document.querySelectorAll("[data-facebook]").forEach((el) => (el.href = cfg.STORE.facebookUrl));
-  document.querySelectorAll("[data-messenger]").forEach((el) => (el.href = cfg.STORE.messengerUrl));
+  const store = cfg.STORE || {};
+  document.querySelectorAll("[data-store-name]").forEach((el) => (el.textContent = store.name || "Vape Shop Catalog"));
+  document.querySelectorAll("[data-store-tagline]").forEach((el) => (el.textContent = store.tagline || "Physical store product catalog"));
+  document.querySelectorAll("[data-store-phone]").forEach((el) => (el.textContent = store.phone || ""));
+  document.querySelectorAll("[data-store-email]").forEach((el) => (el.textContent = store.email || ""));
+  document.querySelectorAll("[data-store-address]").forEach((el) => (el.textContent = store.address || ""));
+  document.querySelectorAll("[data-facebook]").forEach((el) => (el.href = store.facebookUrl || "#"));
+  document.querySelectorAll("[data-messenger]").forEach((el) => (el.href = store.messengerUrl || "#"));
   const banner = document.querySelector("[data-announcement]");
-  if (banner) banner.textContent = cfg.STORE.announcement;
+  if (banner) banner.textContent = store.announcement || setupMessage;
   const hours = document.querySelector("[data-store-hours]");
-  if (hours) hours.innerHTML = cfg.STORE.hours.map((line) => `<div>${escapeHtml(line)}</div>`).join("");
+  if (hours) hours.innerHTML = (store.hours || []).map((line) => `<div>${escapeHtml(line)}</div>`).join("");
   const map = document.querySelector("[data-map]");
-  if (map) map.src = cfg.STORE.mapEmbedUrl;
+  if (map) map.src = store.mapEmbedUrl || "";
 }
 
 function setupThemeToggle() {
@@ -142,6 +159,7 @@ function setupThemeToggle() {
 }
 
 async function fetchCategories(includeHidden = false) {
+  if (!supabase) throw new Error(setupMessage);
   let query = supabase.from("categories").select("*").order("name");
   if (!includeHidden) query = query.eq("active", true);
   const { data, error } = await query;
@@ -150,6 +168,7 @@ async function fetchCategories(includeHidden = false) {
 }
 
 async function fetchProducts(options = {}) {
+  if (!supabase) throw new Error(setupMessage);
   const page = options.page || 1;
   const limit = options.limit || 12;
   const from = (page - 1) * limit;

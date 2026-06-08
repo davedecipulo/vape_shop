@@ -1,6 +1,10 @@
 async function initProduct() {
   const slug = new URL(location.href).searchParams.get("slug") || location.pathname.split("/").filter(Boolean).pop();
   const root = document.getElementById("productDetail");
+  if (!supabase) {
+    root.innerHTML = `<div class="admin-card">${escapeHtml(setupMessage)}</div>`;
+    return;
+  }
   if (!slug || slug === "product.html") {
     root.innerHTML = `<div class="admin-card">Product not found.</div>`;
     return;
@@ -83,7 +87,7 @@ function updateSeo(product) {
 function renderRecent(currentId) {
   const recent = JSON.parse(localStorage.getItem("recentlyViewed") || "[]").filter((item) => item.id !== currentId);
   document.getElementById("recentGrid").innerHTML = recent.length
-    ? recent.map((item) => `<a class="product-card" href="/products/${item.slug}"><img class="product-img" loading="lazy" src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}"><div class="product-body"><h3>${escapeHtml(item.name)}</h3><p class="meta">${escapeHtml(item.brand)}</p></div></a>`).join("")
+    ? recent.map((item) => `<a class="product-card" href="${productUrl(item)}"><img class="product-img" loading="lazy" src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}"><div class="product-body"><h3>${escapeHtml(item.name)}</h3><p class="meta">${escapeHtml(item.brand)}</p></div></a>`).join("")
     : `<div class="admin-card">No other recently viewed products yet.</div>`;
 }
 

@@ -11,7 +11,7 @@ async function initHome() {
     document.getElementById("featuredGrid").innerHTML = featured.data.length ? featured.data.map(productCard).join("") : empty("No featured products yet.");
     document.getElementById("newGrid").innerHTML = newest.data.length ? newest.data.map(productCard).join("") : empty("No products published yet.");
     document.getElementById("categoryGrid").innerHTML = categories.map((cat) => `
-      <a class="admin-card" href="/catalog.html?category=${cat.id}">
+      <a class="admin-card" href="catalog.html?category=${cat.id}">
         <h3>${escapeHtml(cat.name)}</h3>
         <p class="muted">${escapeHtml(cat.description || "Browse category")}</p>
       </a>
@@ -23,7 +23,7 @@ async function initHome() {
 
   const recent = JSON.parse(localStorage.getItem("recentlyViewed") || "[]");
   document.getElementById("recentGrid").innerHTML = recent.length
-    ? recent.map((item) => `<a class="product-card" href="/products/${item.slug}"><img class="product-img" loading="lazy" src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}"><div class="product-body"><h3>${escapeHtml(item.name)}</h3><p class="meta">${escapeHtml(item.brand)}</p></div></a>`).join("")
+    ? recent.map((item) => `<a class="product-card" href="${productUrl(item)}"><img class="product-img" loading="lazy" src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}"><div class="product-body"><h3>${escapeHtml(item.name)}</h3><p class="meta">${escapeHtml(item.brand)}</p></div></a>`).join("")
     : empty("Recently viewed products will appear here.");
 
   document.getElementById("contactForm").addEventListener("submit", (event) => {

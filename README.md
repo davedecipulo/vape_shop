@@ -48,6 +48,88 @@ A modern web-based product catalog for a physical vape shop. This is not an e-co
 
 There is no customer or public user dashboard because this project is intentionally not an e-commerce system and does not include customer accounts.
 
+## Access Guide
+
+### Local Access on This Computer
+
+Open this folder:
+
+```text
+C:\Users\Dave Adrian Carlo\OneDrive\Desktop\VAPESHOP
+```
+
+Double-click these files:
+
+```text
+Homepage:
+index.html
+
+Customer product catalog:
+catalog.html
+
+Admin login:
+admin\login.html
+
+Admin dashboard:
+admin\dashboard.html
+```
+
+The product detail page is opened by clicking a product from the catalog after Supabase is configured and products exist. For local testing, product detail URLs look like this:
+
+```text
+product.html?slug=geek-bar-pulse-blue-razz-ice
+```
+
+### Netlify Access After Deployment
+
+If your Netlify domain is:
+
+```text
+https://your-vape-shop.netlify.app
+```
+
+Use these links:
+
+```text
+Homepage:
+https://your-vape-shop.netlify.app/
+
+Customer product catalog:
+https://your-vape-shop.netlify.app/catalog
+
+Product detail:
+https://your-vape-shop.netlify.app/products/geek-bar-pulse-blue-razz-ice
+
+Admin login:
+https://your-vape-shop.netlify.app/admin/login.html
+
+Admin dashboard:
+https://your-vape-shop.netlify.app/admin/dashboard.html
+
+Clean admin route:
+https://your-vape-shop.netlify.app/admin
+```
+
+### What Works Before Supabase Setup
+
+Before editing `js/config.js`, you can open the pages and see the layout/design. Product data, filters, login, uploads, and admin saving will not work yet.
+
+### What Works After Supabase Setup
+
+After running `sql/schema.sql`, creating the owner Auth user, adding the owner to `admin_users`, and editing `js/config.js`, these features work:
+
+- Public product listings
+- Product detail pages
+- Search and filters
+- Admin login
+- Add/edit/delete/archive/hide products
+- Image uploads
+- Category management
+- Stock updates
+- Bulk import
+
+### Dashboard Locations
+
 The owner/admin dashboard is here:
 
 ```text
