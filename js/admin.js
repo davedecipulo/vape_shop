@@ -1,9 +1,13 @@
-const isLoginPage = location.pathname.includes("/admin/login");
+﻿const isLoginPage = location.pathname.includes("/admin/login");
 const isDashboardPage = location.pathname.includes("/admin/dashboard");
 const adminLoginUrl = location.protocol === "file:" ? "login.html" : "/admin/login.html";
 const adminDashboardUrl = location.protocol === "file:" ? "dashboard.html" : "/admin/dashboard.html";
 let adminProducts = [];
 let adminCategories = [];
+
+function getSupabaseClient() {
+  return window.catalogSupabaseClient || null;
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
   if (isLoginPage) setupLogin();
@@ -13,39 +17,72 @@ document.addEventListener("DOMContentLoaded", async () => {
 function setupLogin() {
   document.getElementById("loginForm").addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!supabase) {
-      toast(setupMessage);
+    const client = getSupabaseClient();
+    if (!client) {
+      showLoginNotice(window.catalogSetupMessage || "Supabase is not configured.");
       return;
     }
     const form = new FormData(event.currentTarget);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: form.get("email"),
+    const email = String(form.get("email") || "").trim();
+    const { data, error } = await client.auth.signInWithPassword({
+      email,
       password: form.get("password")
     });
-    if (error) return toast(error.message);
+    if (error) {
+      showLoginNotice(`Login failed: ${error.message}`);
+      return;
+    }
+    const user = data.user;
+    const { data: admin, error: adminError } = await client
+      .from("admin_users")
+      .select("id,email,role")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (adminError || !admin) {
+      await client.auth.signOut();
+      showLoginNotice(`
+        Auth login worked, but this user is not in public.admin_users yet.
+        Run this in Supabase SQL Editor:
+        <code>insert into public.admin_users (id, email, role) values ('${escapeHtml(user.id)}', '${escapeHtml(email)}', 'owner') on conflict (id) do update set email = excluded.email, role = excluded.role;</code>
+      `);
+      return;
+    }
     location.href = adminDashboardUrl;
   });
 }
 
+function showLoginNotice(message) {
+  let notice = document.getElementById("loginNotice");
+  if (!notice) {
+    notice = document.createElement("div");
+    notice.id = "loginNotice";
+    notice.className = "admin-card";
+    notice.style.marginTop = "16px";
+    document.querySelector(".login-card").appendChild(notice);
+  }
+  notice.innerHTML = `<p>${message}</p>`;
+}
+
 async function setupDashboard() {
-  if (!supabase) {
+  const client = getSupabaseClient();
+  if (!client) {
     document.querySelector(".admin-main").innerHTML = `
       <div class="admin-card">
         <h1>Supabase setup required</h1>
-        <p class="muted">${escapeHtml(setupMessage)}</p>
+        <p class="muted">${escapeHtml(window.catalogSetupMessage || "Supabase is not configured.")}</p>
         <p>After setup, open <strong>/admin/login.html</strong> and sign in with the owner account.</p>
       </div>
     `;
     return;
   }
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await client.auth.getUser();
   if (!user) {
     location.href = adminLoginUrl;
     return;
   }
-  const { data: admin } = await supabase.from("admin_users").select("*").eq("id", user.id).maybeSingle();
+  const { data: admin } = await client.from("admin_users").select("*").eq("id", user.id).maybeSingle();
   if (!admin) {
-    await supabase.auth.signOut();
+    await client.auth.signOut();
     location.href = adminLoginUrl;
     return;
   }
@@ -58,7 +95,7 @@ function bindAdminEvents() {
     button.addEventListener("click", () => showSection(button.dataset.section));
   });
   document.getElementById("logoutBtn").addEventListener("click", async () => {
-    await supabase.auth.signOut();
+    await getSupabaseClient().auth.signOut();
     location.href = adminLoginUrl;
   });
   document.getElementById("newProductBtn").addEventListener("click", () => openProductForm());
@@ -76,8 +113,8 @@ function showSection(id) {
 
 async function refreshAdmin() {
   const [productsResult, categoriesResult] = await Promise.all([
-    supabase.from("products").select("*, categories(name)").order("created_at", { ascending: false }),
-    supabase.from("categories").select("*").order("name")
+    getSupabaseClient().from("products").select("*, categories(name)").order("created_at", { ascending: false }),
+    getSupabaseClient().from("categories").select("*").order("name")
   ]);
   if (productsResult.error) toast(productsResult.error.message);
   if (categoriesResult.error) toast(categoriesResult.error.message);
@@ -194,8 +231,8 @@ async function saveProduct(event) {
     };
     const id = fd.get("id");
     const result = id
-      ? await supabase.from("products").update(payload).eq("id", id)
-      : await supabase.from("products").insert(payload);
+      ? await getSupabaseClient().from("products").update(payload).eq("id", id)
+      : await getSupabaseClient().from("products").insert(payload);
     if (result.error) throw result.error;
     toast("Product saved");
     closeProductForm();
@@ -210,9 +247,9 @@ async function uploadImage(file) {
   if (file.size > 5 * 1024 * 1024) throw new Error("Image must be 5MB or smaller.");
   const ext = file.name.split(".").pop().toLowerCase();
   const path = `${crypto.randomUUID()}.${ext}`;
-  const { error } = await supabase.storage.from(cfg.STORAGE_BUCKET).upload(path, file, { cacheControl: "3600", upsert: false });
+  const { error } = await getSupabaseClient().storage.from(cfg.STORAGE_BUCKET).upload(path, file, { cacheControl: "3600", upsert: false });
   if (error) throw error;
-  return supabase.storage.from(cfg.STORAGE_BUCKET).getPublicUrl(path).data.publicUrl;
+  return getSupabaseClient().storage.from(cfg.STORAGE_BUCKET).getPublicUrl(path).data.publicUrl;
 }
 
 function parseSpecs(value) {
@@ -234,7 +271,7 @@ async function duplicateProduct(id) {
   copy.name = `${copy.name} Copy`;
   copy.slug = "";
   copy.hidden = true;
-  const { error } = await supabase.from("products").insert(copy);
+  const { error } = await getSupabaseClient().from("products").insert(copy);
   if (error) return toast(error.message);
   toast("Product duplicated and hidden");
   refreshAdmin();
@@ -242,14 +279,14 @@ async function duplicateProduct(id) {
 
 async function toggleProduct(id, field) {
   const product = adminProducts.find((p) => p.id === id);
-  const { error } = await supabase.from("products").update({ [field]: !product[field] }).eq("id", id);
+  const { error } = await getSupabaseClient().from("products").update({ [field]: !product[field] }).eq("id", id);
   if (error) return toast(error.message);
   refreshAdmin();
 }
 
 async function deleteProduct(id) {
   if (!confirm("Delete this product permanently?")) return;
-  const { error } = await supabase.from("products").delete().eq("id", id);
+  const { error } = await getSupabaseClient().from("products").delete().eq("id", id);
   if (error) return toast(error.message);
   toast("Product deleted");
   refreshAdmin();
@@ -266,8 +303,8 @@ async function saveCategory(event) {
     active: fd.get("active") === "on"
   };
   const result = fd.get("id")
-    ? await supabase.from("categories").update(payload).eq("id", fd.get("id"))
-    : await supabase.from("categories").insert(payload);
+    ? await getSupabaseClient().from("categories").update(payload).eq("id", fd.get("id"))
+    : await getSupabaseClient().from("categories").insert(payload);
   if (result.error) return toast(result.error.message);
   toast("Category saved");
   form.reset();
@@ -301,14 +338,14 @@ function editCategory(id) {
 
 async function toggleCategory(id) {
   const cat = adminCategories.find((c) => c.id === id);
-  const { error } = await supabase.from("categories").update({ active: !cat.active }).eq("id", id);
+  const { error } = await getSupabaseClient().from("categories").update({ active: !cat.active }).eq("id", id);
   if (error) return toast(error.message);
   refreshAdmin();
 }
 
 async function deleteCategory(id) {
   if (!confirm("Delete this category? Products will become uncategorized.")) return;
-  const { error } = await supabase.from("categories").delete().eq("id", id);
+  const { error } = await getSupabaseClient().from("categories").delete().eq("id", id);
   if (error) return toast(error.message);
   refreshAdmin();
 }
@@ -331,7 +368,7 @@ function renderInventoryTable() {
 
 async function updateStock(id) {
   const stock = Number(document.querySelector(`[data-stock="${id}"]`).value || 0);
-  const { error } = await supabase.from("products").update({ stock }).eq("id", id);
+  const { error } = await getSupabaseClient().from("products").update({ stock }).eq("id", id);
   if (error) return toast(error.message);
   toast("Stock updated");
   refreshAdmin();
@@ -349,7 +386,7 @@ async function importProducts() {
     payload.push({ ...row, category_id: categoryId });
     delete payload[payload.length - 1].category;
   }
-  const { error } = await supabase.from("products").insert(payload);
+  const { error } = await getSupabaseClient().from("products").insert(payload);
   if (error) return toast(error.message);
   document.getElementById("importPreview").innerHTML = table(["Imported", "Brand", "Price", "Stock"], payload.map((p) => [p.name, p.brand, peso(p.price), p.stock]));
   toast(`${payload.length} products imported`);
@@ -391,7 +428,7 @@ function normalizeImportRow(row) {
 async function findOrCreateCategory(name) {
   const existing = adminCategories.find((c) => c.name.toLowerCase() === name.toLowerCase());
   if (existing) return existing.id;
-  const { data, error } = await supabase.from("categories").insert({ name, active: true }).select().single();
+  const { data, error } = await getSupabaseClient().from("categories").insert({ name, active: true }).select().single();
   if (error) throw error;
   adminCategories.push(data);
   return data.id;
@@ -404,3 +441,5 @@ function table(headings, rows) {
       <tbody>${rows.map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`).join("")}</tbody>
     </table>`;
 }
+
+

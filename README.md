@@ -169,6 +169,34 @@ values ('AUTH_USER_UUID', 'owner@example.com', 'owner');
 
 Passwords are stored and secured by Supabase Auth. The `admin_users` table is an allowlist for owner/admin access and intentionally does not store plaintext passwords.
 
+### Admin Users Table
+
+The admin allowlist table is:
+
+```text
+public.admin_users
+```
+
+Columns:
+
+```text
+id       uuid, primary key, same value as auth.users.id
+email    text, owner's email address
+role     text, use owner or manager
+```
+
+Use this exact SQL after creating the Auth user:
+
+```sql
+insert into public.admin_users (id, email, role)
+values ('PASTE_AUTH_USER_UUID_HERE', 'owner@example.com', 'owner')
+on conflict (id) do update
+set email = excluded.email,
+    role = excluded.role;
+```
+
+If login succeeds in Supabase Auth but the owner was not added to `admin_users`, the login page now displays the exact SQL to run using the signed-in user's UUID.
+
 ## Configure the Website
 
 Edit `js/config.js`:

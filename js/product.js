@@ -1,7 +1,7 @@
-async function initProduct() {
+﻿async function initProduct() {
   const slug = new URL(location.href).searchParams.get("slug") || location.pathname.split("/").filter(Boolean).pop();
   const root = document.getElementById("productDetail");
-  if (!supabase) {
+  if (!supabaseClient) {
     root.innerHTML = `<div class="admin-card">${escapeHtml(setupMessage)}</div>`;
     return;
   }
@@ -9,7 +9,7 @@ async function initProduct() {
     root.innerHTML = `<div class="admin-card">Product not found.</div>`;
     return;
   }
-  const { data: product, error } = await supabase
+  const { data: product, error } = await supabaseClient
     .from("products")
     .select("*, categories(name)")
     .eq("slug", slug)
@@ -20,7 +20,7 @@ async function initProduct() {
     root.innerHTML = `<div class="admin-card">Product not found.</div>`;
     return;
   }
-  supabase.rpc("increment_product_view", { product_slug: slug });
+  supabaseClient.rpc("increment_product_view", { product_slug: slug });
   addRecentlyViewed(product);
   updateSeo(product);
   const images = [productImage(product), ...(product.gallery_urls || []).filter((url) => url && url !== product.image_url)];
@@ -92,3 +92,4 @@ function renderRecent(currentId) {
 }
 
 document.addEventListener("DOMContentLoaded", initProduct);
+
