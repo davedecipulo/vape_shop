@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Dashboard | Vape Shop Catalog</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="sidebar">
+      <a class="brand" href="/"><span class="brand-mark">BV</span><span data-store-name></span></a>
+      <div class="side-nav">
+        <button class="btn ghost" data-section="dashboard">Dashboard</button>
+        <button class="btn ghost" data-section="products">Products</button>
+        <button class="btn ghost" data-section="categories">Categories</button>
+        <button class="btn ghost" data-section="inventory">Inventory</button>
+        <button class="btn ghost" data-section="import">Bulk Import</button>
+        <button class="btn danger" id="logoutBtn">Logout</button>
+      </div>
+    </aside>
+    <main class="admin-main">
+      <div class="admin-header">
+        <div><div class="eyebrow">Owner dashboard</div><h1 style="font-size:2.4rem;margin-bottom:0">Catalog Management</h1></div>
+        <button class="btn primary" id="newProductBtn">Add Product</button>
+      </div>
+
+      <section id="dashboard" class="admin-section active">
+        <div class="stats-grid">
+          <div class="admin-card"><span class="muted">Total products</span><strong id="totalProducts">0</strong></div>
+          <div class="admin-card"><span class="muted">Active products</span><strong id="activeProducts">0</strong></div>
+          <div class="admin-card"><span class="muted">Out of stock</span><strong id="outProducts">0</strong></div>
+          <div class="admin-card"><span class="muted">Categories</span><strong id="totalCategories">0</strong></div>
+        </div>
+        <div class="section-head"><div><h2>Recent Products Added</h2></div></div>
+        <div id="recentProducts" class="table-shell"></div>
+      </section>
+
+      <section id="products" class="admin-section">
+        <div class="form-panel hidden" id="productFormPanel">
+          <h2 id="productFormTitle">Add Product</h2>
+          <form id="productForm" class="form-grid">
+            <input type="hidden" name="id">
+            <label>Product Name<input class="input" name="name" required></label>
+            <label>Brand<input class="input" name="brand" required></label>
+            <label>Category<select class="select" name="category_id" required></select></label>
+            <label>Flavor<input class="input" name="flavor"></label>
+            <label>Price<input class="input" name="price" type="number" step="0.01" min="0" required></label>
+            <label>Stock Quantity<input class="input" name="stock" type="number" min="0" required></label>
+            <label class="full">Description<textarea name="description"></textarea></label>
+            <label class="full">Specifications<textarea name="specifications" placeholder='{"Battery":"650mAh","Puffs":"15000"}'></textarea></label>
+            <label>Product Image Upload<input class="input" name="image" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></label>
+            <label>Gallery Images<input class="input" name="gallery" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple></label>
+            <label><input name="featured" type="checkbox"> Featured product</label>
+            <label><input name="hidden" type="checkbox"> Hide from website</label>
+            <div class="full actions">
+              <button class="btn primary" type="submit">Save Product</button>
+              <button class="btn" type="button" id="cancelProduct">Cancel</button>
+            </div>
+          </form>
+        </div>
+        <div id="productsTable" class="table-shell"></div>
+      </section>
+
+      <section id="categories" class="admin-section">
+        <div class="form-panel">
+          <h2>Category Management</h2>
+          <form id="categoryForm" class="form-grid">
+            <input type="hidden" name="id">
+            <label>Name<input class="input" name="name" required></label>
+            <label>Image URL<input class="input" name="image"></label>
+            <label class="full">Description<textarea name="description"></textarea></label>
+            <label><input name="active" type="checkbox" checked> Show category</label>
+            <div class="full actions"><button class="btn primary" type="submit">Save Category</button><button class="btn" type="button" id="clearCategory">Clear</button></div>
+          </form>
+        </div>
+        <div id="categoriesTable" class="table-shell"></div>
+      </section>
+
+      <section id="inventory" class="admin-section">
+        <div class="section-head"><div><h2>Inventory Management</h2><p>Statuses update automatically from stock: above 10 in stock, 1-10 low stock, 0 out of stock.</p></div></div>
+        <div id="inventoryTable" class="table-shell"></div>
+      </section>
+
+      <section id="import" class="admin-section">
+        <div class="form-panel">
+          <h2>Bulk Import</h2>
+          <p class="muted">Upload CSV or Excel files with columns like Product Name, Brand, Category, Flavor, Price, Stock, Description.</p>
+          <input id="importFile" class="input" type="file" accept=".csv,.xlsx,.xls">
+          <div class="hero-actions"><button class="btn primary" id="importBtn">Import Products</button></div>
+        </div>
+        <div id="importPreview" class="table-shell"></div>
+      </section>
+    </main>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+</body>
+</html>

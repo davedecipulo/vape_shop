@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Login | Vape Shop Catalog</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="login-page">
+  <main class="glass login-card">
+    <a class="brand" href="/"><span class="brand-mark">BV</span><span data-store-name></span></a>
+    <h1 style="font-size:2.3rem;margin-top:28px">Owner Login</h1>
+    <p class="muted">Sign in with the owner account created in Supabase Authentication.</p>
+    <form id="loginForm" class="grid">
+      <input class="input" type="email" name="email" placeholder="Email" autocomplete="email" required>
+      <input class="input" type="password" name="password" placeholder="Password" autocomplete="current-password" required>
+      <button class="btn primary" type="submit">Sign In</button>
+    </form>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+</body>
+</html>

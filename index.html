@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blue Volt Vape Shop | In-Store Product Catalog</title>
+  <meta name="description" content="Browse premium vape products available at our physical store. No online checkout, cart, or payments.">
+  <meta property="og:title" content="Blue Volt Vape Shop Product Catalog">
+  <meta property="og:description" content="Premium vape products available in-store. Browse online and contact the shop for inquiries.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="announcement"><div class="shell" data-announcement></div></div>
+  <header class="topbar">
+    <nav class="nav shell">
+      <a class="brand" href="/"><span class="brand-mark">BV</span><span data-store-name></span></a>
+      <div class="nav-links">
+        <a href="/catalog.html">Catalog</a>
+        <a href="#categories">Categories</a>
+        <a href="#store">Store Info</a>
+        <a href="/admin/login.html">Admin</a>
+      </div>
+      <div class="nav-actions"><button class="icon-btn" data-theme-toggle title="Toggle theme">◐</button><a class="btn primary" href="/catalog.html">Browse Products</a></div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="shell hero-grid">
+        <div>
+          <div class="eyebrow">Physical store catalog</div>
+          <h1 data-store-name></h1>
+          <p class="lead" data-store-tagline></p>
+          <p class="lead">Browse product availability before visiting the shop. This catalog is for inquiries only: no cart, no checkout, no online payments.</p>
+          <div class="hero-actions">
+            <a class="btn primary" href="/catalog.html">Explore Catalog</a>
+            <a class="btn" data-messenger target="_blank" rel="noreferrer">Messenger Inquiry</a>
+          </div>
+          <div class="hero-stats">
+            <div class="stat"><strong id="statProducts">0</strong><span>Active products</span></div>
+            <div class="stat"><strong id="statCategories">0</strong><span>Categories</span></div>
+            <div class="stat"><strong id="statStock">Live</strong><span>Stock indicators</span></div>
+          </div>
+        </div>
+        <div class="glass hero-showcase">
+          <div class="device-art"></div>
+          <div class="showcase-copy">
+            <div class="eyebrow">New arrivals</div>
+            <h2 style="margin-bottom:8px">Premium devices, pods, liquids, and accessories.</h2>
+            <p class="muted" style="margin:0">Updated by the shop owner through the admin dashboard.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="shell">
+        <div class="section-head">
+          <div><h2>Featured Products</h2><p>Selected products currently highlighted by the store.</p></div>
+          <a class="btn" href="/catalog.html?sort=popular">View All</a>
+        </div>
+        <div id="featuredGrid" class="grid products"></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="shell">
+        <div class="section-head">
+          <div><h2>New Arrivals</h2><p>Recently added products from the admin catalog.</p></div>
+          <a class="btn" href="/catalog.html?sort=newest">Latest</a>
+        </div>
+        <div id="newGrid" class="grid products"></div>
+      </div>
+    </section>
+
+    <section id="categories">
+      <div class="shell">
+        <div class="section-head"><div><h2>Categories</h2><p>Browse by product type.</p></div></div>
+        <div id="categoryGrid" class="grid categories"></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="shell">
+        <div class="section-head"><div><h2>Recently Viewed</h2><p>Your last viewed catalog items on this device.</p></div></div>
+        <div id="recentGrid" class="grid products"></div>
+      </div>
+    </section>
+
+    <section id="store">
+      <div class="shell info-grid">
+        <div class="glass" style="padding:24px">
+          <div class="eyebrow">Visit us</div>
+          <h2>Store Information</h2>
+          <p class="lead" data-store-address></p>
+          <p><strong>Phone:</strong> <span data-store-phone></span><br><strong>Email:</strong> <span data-store-email></span></p>
+          <div data-store-hours class="muted"></div>
+          <div class="hero-actions">
+            <a class="btn primary" data-messenger target="_blank" rel="noreferrer">Messenger</a>
+            <a class="btn" data-facebook target="_blank" rel="noreferrer">Facebook</a>
+          </div>
+        </div>
+        <iframe class="map" data-map loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Store map"></iframe>
+      </div>
+    </section>
+
+    <section>
+      <div class="shell">
+        <div class="form-panel">
+          <h2>Contact Form</h2>
+          <form id="contactForm" class="form-grid">
+            <input class="input" name="name" placeholder="Your name" required>
+            <input class="input" name="contact" placeholder="Phone or email" required>
+            <textarea class="full" name="message" placeholder="Product inquiry" required></textarea>
+            <button class="btn primary" type="submit">Prepare Inquiry</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="shell">© <span id="year"></span> <span data-store-name></span>. Product catalog only. No online sales or checkout.</div></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/home.js"></script>
+</body>
+</html>
