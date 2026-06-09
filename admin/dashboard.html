@@ -63,6 +63,24 @@
             </div>
           </form>
         </div>
+        <div id="bulkBar" class="bulk-bar hidden">
+          <span id="bulkCount" class="muted">0 selected</span>
+          <button class="btn" id="bulkHideBtn">Hide</button>
+          <button class="btn" id="bulkShowBtn">Show</button>
+          <button class="btn" id="bulkArchiveBtn">Archive</button>
+          <button class="btn" id="bulkRestoreBtn">Restore</button>
+          <button class="btn danger" id="bulkDeleteBtn">Delete</button>
+          <button class="btn ghost" id="bulkClearBtn">Clear selection</button>
+        </div>
+        <div id="bulkConfirm" class="form-panel hidden">
+          <h3>Confirm deletion</h3>
+          <p class="muted">Uncheck any products you want to keep.</p>
+          <div id="bulkConfirmList" class="choice-list"></div>
+          <div class="actions" style="margin-top:14px">
+            <button class="btn danger" id="bulkConfirmOk">Delete</button>
+            <button class="btn" id="bulkConfirmCancel">Cancel</button>
+          </div>
+        </div>
         <div id="productsTable" class="table-shell"></div>
       </section>
 

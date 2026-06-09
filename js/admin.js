@@ -104,6 +104,14 @@ function bindAdminEvents() {
   document.getElementById("categoryForm").addEventListener("submit", saveCategory);
   document.getElementById("clearCategory").addEventListener("click", () => document.getElementById("categoryForm").reset());
   document.getElementById("importBtn").addEventListener("click", importProducts);
+  document.getElementById("bulkHideBtn").addEventListener("click", () => bulkToggle("hidden", true));
+  document.getElementById("bulkShowBtn").addEventListener("click", () => bulkToggle("hidden", false));
+  document.getElementById("bulkArchiveBtn").addEventListener("click", () => bulkToggle("archived", true));
+  document.getElementById("bulkRestoreBtn").addEventListener("click", () => bulkToggle("archived", false));
+  document.getElementById("bulkDeleteBtn").addEventListener("click", openBulkDeleteConfirm);
+  document.getElementById("bulkClearBtn").addEventListener("click", clearBulkSelection);
+  document.getElementById("bulkConfirmOk").addEventListener("click", confirmBulkDelete);
+  document.getElementById("bulkConfirmCancel").addEventListener("click", () => document.getElementById("bulkConfirm").classList.add("hidden"));
 }
 
 function showSection(id) {
@@ -144,11 +152,14 @@ function renderProductFormCategories() {
 }
 
 function renderProductsTable() {
+  document.getElementById("bulkBar").classList.add("hidden");
+  document.getElementById("bulkConfirm").classList.add("hidden");
   document.getElementById("productsTable").innerHTML = `
     <table>
-      <thead><tr><th>Image</th><th>Name</th><th>Brand</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Visibility</th><th>Actions</th></tr></thead>
+      <thead><tr><th><input type="checkbox" id="selectAll" title="Select all"></th><th>Image</th><th>Name</th><th>Brand</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Visibility</th><th>Actions</th></tr></thead>
       <tbody>${adminProducts.map((p) => `
         <tr>
+          <td><input type="checkbox" class="bulk-check" data-bulk="${p.id}"></td>
           <td><img class="preview-img" src="${escapeHtml(productImage(p))}" alt=""></td>
           <td>${escapeHtml(p.name)}</td>
           <td>${escapeHtml(p.brand)}</td>
@@ -175,6 +186,61 @@ function bindProductTableActions() {
   document.querySelectorAll("[data-hide]").forEach((b) => b.addEventListener("click", () => toggleProduct(b.dataset.hide, "hidden")));
   document.querySelectorAll("[data-archive]").forEach((b) => b.addEventListener("click", () => toggleProduct(b.dataset.archive, "archived")));
   document.querySelectorAll("[data-delete]").forEach((b) => b.addEventListener("click", () => deleteProduct(b.dataset.delete)));
+  document.getElementById("selectAll").addEventListener("change", (e) => {
+    document.querySelectorAll(".bulk-check").forEach((cb) => (cb.checked = e.target.checked));
+    updateBulkBar();
+  });
+  document.querySelectorAll(".bulk-check").forEach((cb) => cb.addEventListener("change", updateBulkBar));
+}
+
+function updateBulkBar() {
+  const count = document.querySelectorAll(".bulk-check:checked").length;
+  document.getElementById("bulkCount").textContent = `${count} selected`;
+  document.getElementById("bulkBar").classList.toggle("hidden", count === 0);
+}
+
+function getSelectedIds() {
+  return [...document.querySelectorAll(".bulk-check:checked")].map((cb) => cb.dataset.bulk);
+}
+
+function clearBulkSelection() {
+  document.querySelectorAll(".bulk-check").forEach((cb) => (cb.checked = false));
+  const all = document.getElementById("selectAll");
+  if (all) all.checked = false;
+  updateBulkBar();
+}
+
+async function bulkToggle(field, value) {
+  const ids = getSelectedIds();
+  if (!ids.length) return;
+  const { error } = await getSupabaseClient().from("products").update({ [field]: value }).in("id", ids);
+  if (error) return toast(error.message);
+  toast(`${ids.length} products updated`);
+  refreshAdmin();
+}
+
+function openBulkDeleteConfirm() {
+  const ids = getSelectedIds();
+  if (!ids.length) return;
+  const products = adminProducts.filter((p) => ids.includes(p.id));
+  document.getElementById("bulkConfirmList").innerHTML = products.map((p) => `
+    <label class="choice-item">
+      <input type="checkbox" class="confirm-check" value="${p.id}" checked>
+      <div>${escapeHtml(p.name)}<span>${escapeHtml(p.brand)} · ${peso(p.price)}</span></div>
+    </label>
+  `).join("");
+  document.getElementById("bulkConfirm").classList.remove("hidden");
+  document.getElementById("bulkConfirm").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+async function confirmBulkDelete() {
+  const ids = [...document.querySelectorAll(".confirm-check:checked")].map((cb) => cb.value);
+  if (!ids.length) return;
+  const { error } = await getSupabaseClient().from("products").delete().in("id", ids);
+  if (error) return toast(error.message);
+  document.getElementById("bulkConfirm").classList.add("hidden");
+  toast(`${ids.length} products deleted`);
+  refreshAdmin();
 }
 
 function openProductForm(product = null) {
