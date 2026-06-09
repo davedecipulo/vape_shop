@@ -9,7 +9,7 @@ window.VAPE_SHOP_CONFIG = {
     email: "davepalomado2005@gmail.com",
     facebookUrl: "https://facebook.com/your-vape-shop",
     messengerUrl: "https://m.me/your-vape-shop",
-    address: "Your physical store address",
+    address: "Sta. Barbara, Iloilo City, Philippines",
     mapEmbedUrl: "https://www.google.com/maps/@10.8209467,122.5260011,1739m/data=!3m1!1e3!5m1!1e1?entry=ttu&g_ep=EgoyMDI2MDYwMy4xIKXMDSoASAFQAw%3D%3D=embed",
     hours: [
       "Monday - Saturday: 10:00 AM - 9:00 PM",
