@@ -96,7 +96,7 @@ function bindAdminEvents() {
   });
   document.getElementById("logoutBtn").addEventListener("click", async () => {
     await getSupabaseClient().auth.signOut();
-    location.href = adminLoginUrl;
+    location.href = location.protocol === "file:" ? "../../index.html" : "/";
   });
   document.getElementById("newProductBtn").addEventListener("click", () => openProductForm());
   document.getElementById("cancelProduct").addEventListener("click", closeProductForm);
